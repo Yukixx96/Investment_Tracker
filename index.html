@@ -4,409 +4,148 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>每月投资管理（本地保存）</title>
-  <style>
-    :root { --bd:#e5e7eb; --fg:#111827; --muted:#6b7280; --bg:#ffffff; }
-    body{ font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
-      margin:0; color:var(--fg); background: #f8fafc;}
-    .wrap{ max-width:1100px; margin:24px auto; padding:0 16px;}
-    h1{ font-size:20px; margin:0 0 12px;}
-    .card{ background:var(--bg); border:1px solid var(--bd); border-radius:14px; padding:14px; box-shadow:0 1px 2px rgba(0,0,0,.04); }
-    .grid{ display:grid; gap:12px;}
-    .grid2{ grid-template-columns: 1.2fr .8fr; }
-    @media (max-width:900px){ .grid2{ grid-template-columns:1fr; } }
-    label{ font-size:12px; color:var(--muted); display:block; margin-bottom:4px;}
-    input, select, textarea{
-      width:100%; box-sizing:border-box; padding:10px 10px;
-      border:1px solid var(--bd); border-radius:10px; background:white; font-size:14px;
-    }
-    textarea{ resize:vertical; min-height:40px;}
-    .row{ display:grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap:10px;}
-    @media (max-width:900px){ .row{ grid-template-columns: 1fr 1fr; } }
-    .row2{ display:grid; grid-template-columns: 1fr 2fr; gap:10px;}
-    .btns{ display:flex; gap:8px; flex-wrap:wrap; align-items:center;}
-    button{
-      border:1px solid var(--bd); background:white; border-radius:10px; padding:10px 12px;
-      cursor:pointer; font-weight:600;
-    }
-    button.primary{ background:#111827; color:white; border-color:#111827;}
-    button.danger{ background:#fff; color:#b91c1c; border-color:#fecaca;}
-    .muted{ color:var(--muted); font-size:12px;}
-    table{ width:100%; border-collapse:collapse; font-size:14px; }
-    th, td{ border-bottom:1px solid var(--bd); padding:10px 8px; text-align:left; vertical-align:top;}
-    th{ color:var(--muted); font-weight:700; font-size:12px; }
-    .pill{ display:inline-block; padding:4px 8px; border:1px solid var(--bd); border-radius:999px; font-size:12px; color:#111827; background:#fff;}
-    .kpi{ display:flex; gap:12px; flex-wrap:wrap;}
-    .kpi .box{ flex:1; min-width:180px; border:1px solid var(--bd); border-radius:12px; padding:10px; background:#fff;}
-    .kpi .v{ font-size:20px; font-weight:800; margin-top:2px;}
-    .right{ text-align:right;}
-    .small{ font-size:12px; color:var(--muted); }
-    .warn{ color:#b45309; }
-    .ok{ color:#047857; }
-  </style>
+  <link rel="stylesheet" href="./assets/styles.css" />
 </head>
 <body>
-<div class="wrap">
-  <h1>每月投资管理（本地保存 / 自动汇总）</h1>
-  <div class="muted">数据保存在你的浏览器 LocalStorage。建议定期“导出 JSON”做备份。</div>
+  <div class="wrap">
+    <h1>每月投资管理（本地保存 / 自动汇总）</h1>
+    <div class="muted">
+      数据保存在你的浏览器 LocalStorage。建议定期“导出 JSON”备份。
+    </div>
 
-  <div class="grid grid2" style="margin-top:12px;">
-    <div class="card">
-      <div class="row">
-        <div>
-          <label>当前查看月份</label>
-          <input id="monthPicker" type="month" />
-        </div>
-        <div>
-          <label>每月总上限（円）</label>
-          <input id="monthlyCap" type="number" step="1000" />
-        </div>
-        <div>
-          <label>货币单位显示</label>
-          <select id="unitMode">
-            <option value="yen">円（默认）</option>
-            <option value="man">万日元（仅显示）</option>
-          </select>
-        </div>
-        <div>
-          <label>操作</label>
-          <div class="btns">
-            <button id="btnExport">导出JSON</button>
-            <button id="btnImport">导入JSON</button>
-            <button id="btnReset" class="danger">清空数据</button>
-            <input id="fileInput" type="file" accept="application/json" style="display:none" />
+    <div class="grid grid2" style="margin-top:12px;">
+      <div class="card">
+        <div class="row">
+          <div>
+            <label>当前查看月份</label>
+            <input id="monthPicker" type="month" />
+          </div>
+          <div>
+            <label>每月总上限（円）</label>
+            <input id="monthlyCap" type="number" step="1000" />
+          </div>
+          <div>
+            <label>货币单位显示</label>
+            <select id="unitMode">
+              <option value="yen">円（默认）</option>
+              <option value="man">万日元（仅显示）</option>
+            </select>
+          </div>
+          <div>
+            <label>操作</label>
+            <div class="btns">
+              <button id="btnExport">导出JSON</button>
+              <button id="btnImport">导入JSON</button>
+              <button id="btnReset" class="danger">清空数据</button>
+              <input id="fileInput" type="file" accept="application/json" style="display:none" />
+            </div>
           </div>
         </div>
-      </div>
 
-      <hr style="border:none;border-top:1px solid var(--bd);margin:14px 0;">
+        <hr class="hr" />
 
-      <div class="row">
-        <div>
-          <label>日期</label>
-          <input id="date" type="date" />
-        </div>
-        <div>
-          <label>类别</label>
-          <select id="category"></select>
-        </div>
-        <div>
-          <label>标的（可选：NVDA/GOOGL/任天堂等）</label>
-          <input id="ticker" placeholder="例如：英伟达 / NVDA" />
-        </div>
-        <div>
-          <label>金额（円）</label>
-          <input id="amount" type="number" step="1" placeholder="例如：12000" />
-        </div>
-      </div>
-
-      <div class="row2" style="margin-top:10px;">
-        <div>
-          <label>备注（可选）</label>
-          <textarea id="note" placeholder="例如：1股；低价补一点"></textarea>
-        </div>
-        <div>
-          <label>&nbsp;</label>
-          <div class="btns">
-            <button id="btnAdd" class="primary">添加记录</button>
-            <span class="muted">建议：你可以像你说的那样“1股1股记”，系统会自动汇总。</span>
+        <div class="row">
+          <div>
+            <label>日期</label>
+            <input id="date" type="date" />
+          </div>
+          <div>
+            <label>类别</label>
+            <select id="category"></select>
+          </div>
+          <div>
+            <label>标的（可选：NVDA/GOOGL/任天堂等）</label>
+            <input id="ticker" placeholder="例如：英伟达 / NVDA" />
+          </div>
+          <div>
+            <label>金额（円）</label>
+            <input id="amount" type="number" step="1" placeholder="例如：12000" />
           </div>
         </div>
+
+        <div class="row2" style="margin-top:10px;">
+          <div>
+            <label>备注（可选）</label>
+            <textarea id="note" placeholder="例如：1股；低价补一点"></textarea>
+          </div>
+          <div>
+            <label>&nbsp;</label>
+            <div class="btns">
+              <button id="btnAdd" class="primary">添加记录</button>
+              <span class="muted">你可以“1股1股记”，系统会自动汇总。</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="muted" style="margin-top:10px;">
+          预算配置在 <code>assets/budgets.js</code> 里；想改为网页可编辑我也能再帮你升级。
+        </div>
       </div>
 
-      <div class="muted" style="margin-top:10px;">
-        预算配置：你可以在代码里改，也可以告诉我你想把每类的“每月额度（万日元）”改成可编辑版，我可以继续升级。
+      <div class="card">
+        <div class="kpi">
+          <div class="box">
+            <div class="small">本月已用</div>
+            <div class="v" id="kpiUsed">-</div>
+          </div>
+          <div class="box">
+            <div class="small">本月剩余</div>
+            <div class="v" id="kpiRemain">-</div>
+          </div>
+          <div class="box">
+            <div class="small">使用率</div>
+            <div class="v" id="kpiRate">-</div>
+          </div>
+        </div>
+
+        <div style="margin-top:14px;">
+          <div class="small">按类别预算（本月）</div>
+          <table id="tableCat">
+            <thead>
+              <tr>
+                <th>类别</th>
+                <th class="right">预算</th>
+                <th class="right">已用</th>
+                <th class="right">剩余</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+          <div class="muted" style="margin-top:8px;">
+            说明：预算来自你的年度表（240万/年，20万/月）。
+          </div>
+        </div>
       </div>
     </div>
 
-    <div class="card">
-      <div class="kpi">
-        <div class="box">
-          <div class="small">本月已用</div>
-          <div class="v" id="kpiUsed">-</div>
+    <div class="card" style="margin-top:12px;">
+      <div class="headRow">
+        <div>
+          <span class="pill" id="pillMonth">-</span>
+          <span class="pill" id="pillCount">-</span>
         </div>
-        <div class="box">
-          <div class="small">本月剩余</div>
-          <div class="v" id="kpiRemain">-</div>
-        </div>
-        <div class="box">
-          <div class="small">使用率</div>
-          <div class="v" id="kpiRate">-</div>
-        </div>
+        <div class="muted">点击“删除”可移除单条记录。</div>
       </div>
 
-      <div style="margin-top:14px;">
-        <div class="small">按类别预算（本月）</div>
-        <table id="tableCat">
+      <div style="margin-top:10px;">
+        <table id="tableTx">
           <thead>
             <tr>
-              <th>类别</th>
-              <th class="right">预算</th>
-              <th class="right">已用</th>
-              <th class="right">剩余</th>
+              <th style="width:90px;">日期</th>
+              <th style="width:130px;">类别</th>
+              <th>标的</th>
+              <th class="right" style="width:120px;">金额</th>
+              <th>备注</th>
+              <th style="width:90px;"></th>
             </tr>
           </thead>
           <tbody></tbody>
         </table>
-        <div class="muted" style="margin-top:8px;">
-          说明：预算来自你目前的表（240万/年，20万/月）：
-          纳斯达克5万、美科4万、日重工3万、日银行3万、日半导体2万、日游戏1万、日房产1万、其他1万（单位：万日元）。
-        </div>
       </div>
     </div>
   </div>
 
-  <div class="card" style="margin-top:12px;">
-    <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;">
-      <div>
-        <span class="pill" id="pillMonth">-</span>
-        <span class="pill" id="pillCount">-</span>
-      </div>
-      <div class="muted">点击“删除”可移除单条记录（不会影响其他月份）。</div>
-    </div>
-    <div style="margin-top:10px;">
-      <table id="tableTx">
-        <thead>
-          <tr>
-            <th style="width:90px;">日期</th>
-            <th style="width:130px;">类别</th>
-            <th>标的</th>
-            <th class="right" style="width:120px;">金额</th>
-            <th>备注</th>
-            <th style="width:90px;"></th>
-          </tr>
-        </thead>
-        <tbody></tbody>
-      </table>
-    </div>
-  </div>
-
-</div>
-
-<script>
-(() => {
-  const LS_KEY = "yuki_invest_tracker_v1";
-
-  // 你的预算配置（按你最新表：单位“万日元/月”）
-  // 这里用“円”存储：万日元 * 10000
-  const BUDGETS = [
-    { key:"NASDAQ", name:"NNN", monthlyMan: 5 },
-    { key:"US_TECH", name:"111", monthlyMan: 4 },
-    { key:"JP_HEAVY", name:"222", monthlyMan: 3 },
-    { key:"JP_BANK", name:"333", monthlyMan: 3 },
-    { key:"JP_SEMI", name:"444", monthlyMan: 2 },
-    { key:"JP_GAME", name:"555", monthlyMan: 1 },
-    { key:"JP_RE", name:"666", monthlyMan: 1 },
-    { key:"OTHER", name:"其他", monthlyMan: 1 },
-  ];
-
-  const $ = (id) => document.getElementById(id);
-
-  const state = load() ?? {
-    monthlyCapYen: 200000, // 20万日元/月
-    unitMode: "yen",
-    txs: [] // {id, date, categoryKey, ticker, amountYen, note}
-  };
-
-  // init controls
-  const today = new Date();
-  const ym = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,"0")}`;
-  $("monthPicker").value = ym;
-  $("monthlyCap").value = state.monthlyCapYen;
-  $("unitMode").value = state.unitMode;
-
-  // category options
-  const catSel = $("category");
-  BUDGETS.forEach(b => {
-    const op = document.createElement("option");
-    op.value = b.key;
-    op.textContent = b.name;
-    catSel.appendChild(op);
-  });
-
-  // default date = today
-  $("date").value = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,"0")}-${String(today.getDate()).padStart(2,"0")}`;
-
-  // listeners
-  $("monthPicker").addEventListener("change", renderAll);
-  $("monthlyCap").addEventListener("change", () => {
-    state.monthlyCapYen = Number($("monthlyCap").value || 0);
-    save(state);
-    renderAll();
-  });
-  $("unitMode").addEventListener("change", () => {
-    state.unitMode = $("unitMode").value;
-    save(state);
-    renderAll();
-  });
-
-  $("btnAdd").addEventListener("click", () => {
-    const date = $("date").value;
-    const categoryKey = $("category").value;
-    const ticker = $("ticker").value.trim();
-    const note = $("note").value.trim();
-    const amountYen = Number($("amount").value);
-
-    if (!date) return alert("请选择日期");
-    if (!categoryKey) return alert("请选择类别");
-    if (!amountYen || amountYen <= 0) return alert("请输入正确金额（円）");
-
-    state.txs.push({
-      id: crypto.randomUUID(),
-      date, categoryKey, ticker, note,
-      amountYen
-    });
-    save(state);
-
-    $("ticker").value = "";
-    $("amount").value = "";
-    $("note").value = "";
-    renderAll();
-  });
-
-  $("btnExport").addEventListener("click", () => {
-    const blob = new Blob([JSON.stringify(state, null, 2)], {type:"application/json"});
-    const a = document.createElement("a");
-    a.href = URL.createObjectURL(blob);
-    a.download = `invest_backup_${new Date().toISOString().slice(0,10)}.json`;
-    a.click();
-    URL.revokeObjectURL(a.href);
-  });
-
-  $("btnImport").addEventListener("click", () => $("fileInput").click());
-  $("fileInput").addEventListener("change", async (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    try {
-      const text = await file.text();
-      const obj = JSON.parse(text);
-      if (!obj || !Array.isArray(obj.txs)) throw new Error("格式不对");
-      // shallow validate
-      state.monthlyCapYen = Number(obj.monthlyCapYen || state.monthlyCapYen);
-      state.unitMode = (obj.unitMode === "man" ? "man" : "yen");
-      state.txs = obj.txs.map(t => ({
-        id: String(t.id || crypto.randomUUID()),
-        date: String(t.date),
-        categoryKey: String(t.categoryKey),
-        ticker: String(t.ticker || ""),
-        note: String(t.note || ""),
-        amountYen: Number(t.amountYen || 0),
-      })).filter(t => t.date && t.categoryKey && t.amountYen > 0);
-      save(state);
-      $("monthlyCap").value = state.monthlyCapYen;
-      $("unitMode").value = state.unitMode;
-      renderAll();
-      alert("导入成功");
-    } catch (err) {
-      alert("导入失败：请确认是本工具导出的 JSON 文件");
-    } finally {
-      e.target.value = "";
-    }
-  });
-
-  $("btnReset").addEventListener("click", () => {
-    if (!confirm("确定要清空所有数据吗？此操作不可恢复。建议先导出备份。")) return;
-    localStorage.removeItem(LS_KEY);
-    location.reload();
-  });
-
-  function load(){
-    try{
-      const s = localStorage.getItem(LS_KEY);
-      if(!s) return null;
-      return JSON.parse(s);
-    }catch{ return null; }
-  }
-  function save(obj){
-    localStorage.setItem(LS_KEY, JSON.stringify(obj));
-  }
-
-  function fmt(yen){
-    const mode = state.unitMode;
-    if (mode === "man") {
-      return (yen/10000).toFixed(yen % 10000 === 0 ? 0 : 2) + " 万";
-    }
-    return yen.toLocaleString("ja-JP") + " 円";
-  }
-
-  function monthKey(dateStr){
-    return dateStr.slice(0,7); // YYYY-MM
-  }
-
-  function renderAll(){
-    const curYM = $("monthPicker").value;
-    const txs = state.txs
-      .filter(t => monthKey(t.date) === curYM)
-      .sort((a,b) => a.date.localeCompare(b.date));
-
-    const used = txs.reduce((s,t)=>s+t.amountYen,0);
-    const cap = state.monthlyCapYen;
-    const remain = cap - used;
-
-    $("pillMonth").textContent = `月份：${curYM}`;
-    $("pillCount").textContent = `记录：${txs.length} 条`;
-
-    $("kpiUsed").textContent = fmt(used);
-    $("kpiRemain").textContent = fmt(remain);
-    const rate = cap > 0 ? (used/cap*100) : 0;
-    $("kpiRate").textContent = rate.toFixed(1) + "%";
-    $("kpiRemain").className = "v " + (remain < 0 ? "warn" : "ok");
-
-    // category table
-    const tbody = $("tableCat").querySelector("tbody");
-    tbody.innerHTML = "";
-    BUDGETS.forEach(b => {
-      const budgetYen = b.monthlyMan * 10000;
-      const catUsed = txs.filter(t => t.categoryKey === b.key).reduce((s,t)=>s+t.amountYen,0);
-      const catRemain = budgetYen - catUsed;
-
-      const tr = document.createElement("tr");
-      tr.innerHTML = `
-        <td>${b.name}</td>
-        <td class="right">${fmt(budgetYen)}</td>
-        <td class="right">${fmt(catUsed)}</td>
-        <td class="right"><span class="${catRemain<0?'warn':'ok'}">${fmt(catRemain)}</span></td>
-      `;
-      tbody.appendChild(tr);
-    });
-
-    // tx list
-    const txBody = $("tableTx").querySelector("tbody");
-    txBody.innerHTML = "";
-    txs.forEach(t => {
-      const catName = BUDGETS.find(b=>b.key===t.categoryKey)?.name ?? t.categoryKey;
-      const tr = document.createElement("tr");
-      tr.innerHTML = `
-        <td>${t.date}</td>
-        <td>${catName}</td>
-        <td>${escapeHtml(t.ticker)}</td>
-        <td class="right">${fmt(t.amountYen)}</td>
-        <td>${escapeHtml(t.note)}</td>
-        <td class="right"><button data-id="${t.id}" class="danger">删除</button></td>
-      `;
-      txBody.appendChild(tr);
-    });
-
-    txBody.querySelectorAll("button[data-id]").forEach(btn => {
-      btn.addEventListener("click", () => {
-        const id = btn.getAttribute("data-id");
-        const idx = state.txs.findIndex(x => x.id === id);
-        if (idx >= 0) {
-          state.txs.splice(idx, 1);
-          save(state);
-          renderAll();
-        }
-      });
-    });
-  }
-
-  function escapeHtml(s){
-    return (s ?? "").replace(/[&<>"']/g, c => ({
-      "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
-    }[c]));
-  }
-
-  renderAll();
-})();
-</script>
+  <!-- 用 ES Modules 拆文件 -->
+  <script type="module" src="./assets/app.js"></script>
 </body>
 </html>
