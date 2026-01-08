@@ -124,6 +124,11 @@ function renderAll(){
     .filter(t => monthKey(t.date) === curYM)
     .sort((a,b) => a.date.localeCompare(b.date));
 
+  const catTotals = new Map();
+  txs.forEach(t => {
+    catTotals.set(t.categoryKey, (catTotals.get(t.categoryKey) ?? 0) + t.amountYen);
+  });
+
   const used = txs.reduce((s,t)=>s+t.amountYen,0);
   const cap = state.monthlyCapYen;
   const remain = cap - used;
@@ -143,7 +148,7 @@ function renderAll(){
   tbody.innerHTML = "";
   BUDGETS.forEach(b => {
     const budgetYen = b.monthlyMan * 10000;
-    const catUsed = txs.filter(t => t.categoryKey === b.key).reduce((s,t)=>s+t.amountYen,0);
+    const catUsed = catTotals.get(b.key) ?? 0;
     const catRemain = budgetYen - catUsed;
 
     const tr = document.createElement("tr");
@@ -159,8 +164,9 @@ function renderAll(){
   // tx list
   const txBody = $("tableTx").querySelector("tbody");
   txBody.innerHTML = "";
+  const catNameMap = new Map(BUDGETS.map(b => [b.key, b.name]));
   txs.forEach(t => {
-    const catName = BUDGETS.find(b=>b.key===t.categoryKey)?.name ?? t.categoryKey;
+    const catName = catNameMap.get(t.categoryKey) ?? t.categoryKey;
     const tr = document.createElement("tr");
     tr.innerHTML = `
       <td>${t.date}</td>
