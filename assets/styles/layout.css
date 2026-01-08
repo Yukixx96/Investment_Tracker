@@ -36,3 +36,31 @@
     grid-template-columns: repeat(2, 1fr);
   }
 }
+
+/* 顶部配置行：固定宽度 + 自适应 当前查看月份 每月总上限（円）货币单位显示*/
+.row-config {
+  display: grid;
+  grid-template-columns: 130px 120px 120px;
+  gap: 10px;
+}
+
+/* 手机配置 */
+@media (max-width: 900px) {
+  .row-config {
+    grid-template-columns: 1fr 1fr 1fr;
+  }
+}
+
+/* 交易输入行：日期 / 类别 / 股票 / 金额 */
+.row-tx {
+  display: grid;
+  grid-template-columns: 130px 120px 120px 120px;
+  gap: 10px;
+}
+
+/* 手机配置 */
+@media (max-width: 900px) {
+  .row-tx {
+    grid-template-columns: 1fr 1fr;
+  }
+}

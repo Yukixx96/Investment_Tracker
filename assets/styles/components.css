@@ -103,8 +103,8 @@ th {
   margin: 14px 0;
 }
 
-#note {
-  min-height: 32px;   /* 原来是 40px */
+#note { /* 备注输入框 */
+  min-height: 40px;  
   padding: 10px 10px;  /* 上下更紧凑 */
-  line-height: 0.6;
+  line-height: 1.0;
 }
