@@ -78,7 +78,30 @@
         </div>
 
         <div class="muted" style="margin-top:10px;">
-          预算配置在 <code>assets/budgets.js</code> 里；想改为网页可编辑我也能再帮你升级。
+          预算配置支持直接在网页里编辑，修改会自动保存到浏览器。
+        </div>
+
+        <hr class="hr" />
+
+        <div>
+          <div class="topline">
+            <div>
+              <div class="small">预算配置（万日元/月）</div>
+              <div class="muted">可修改类别名称与金额，删除不会影响已记录的数据。</div>
+            </div>
+            <button id="btnAddBudget">新增类别</button>
+          </div>
+          <table id="tableBudgetEdit" class="table-edit" style="margin-top:8px;">
+            <thead>
+              <tr>
+                <th>类别代码</th>
+                <th>类别名称</th>
+                <th class="right">预算（万日元/月）</th>
+                <th style="width:90px;"></th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
         </div>
       </div>
 

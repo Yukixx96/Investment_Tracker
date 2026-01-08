@@ -5,10 +5,12 @@ import { $, monthKey, escapeHtml, fmtMoney } from "./utils.js";
 const defaultState = {
   monthlyCapYen: 200000, // 20万日元/月
   unitMode: "yen",
-  txs: [] // {id, date, categoryKey, ticker, amountYen, note}
+  txs: [], // {id, date, categoryKey, ticker, amountYen, note}
+  budgets: structuredClone(BUDGETS)
 };
 
 const state = loadState() ?? structuredClone(defaultState);
+state.budgets = normalizeBudgets(state.budgets ?? BUDGETS);
 
 // init UI
 const today = new Date();
@@ -22,13 +24,7 @@ $("date").value = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(
 
 // category select
 const catSel = $("category");
-catSel.innerHTML = "";
-BUDGETS.forEach(b => {
-  const op = document.createElement("option");
-  op.value = b.key;
-  op.textContent = b.name;
-  catSel.appendChild(op);
-});
+renderCategoryOptions();
 
 // events
 $("monthPicker").addEventListener("change", renderAll);
@@ -87,6 +83,9 @@ $("fileInput").addEventListener("change", async (e) => {
 
     state.monthlyCapYen = Number(obj.monthlyCapYen || state.monthlyCapYen);
     state.unitMode = (obj.unitMode === "man") ? "man" : "yen";
+    if (obj.budgets) {
+      state.budgets = normalizeBudgets(obj.budgets);
+    }
     state.txs = obj.txs.map(t => ({
       id: String(t.id || (crypto?.randomUUID?.() ?? Date.now())),
       date: String(t.date),
@@ -99,6 +98,8 @@ $("fileInput").addEventListener("change", async (e) => {
     saveState(state);
     $("monthlyCap").value = state.monthlyCapYen;
     $("unitMode").value = state.unitMode;
+    renderCategoryOptions();
+    renderBudgetEditor();
     renderAll();
     alert("导入成功");
   } catch {
@@ -113,6 +114,124 @@ $("btnReset").addEventListener("click", () => {
   clearState();
   location.reload();
 });
+
+// budget editor
+$("btnAddBudget").addEventListener("click", () => {
+  const key = uniqueBudgetKey();
+  state.budgets.push({ key, name: "新类别", monthlyMan: 1 });
+  saveState(state);
+  renderBudgetEditor();
+  renderCategoryOptions();
+  renderAll();
+});
+
+function normalizeBudgets(raw) {
+  if (!Array.isArray(raw)) return structuredClone(BUDGETS);
+  const seen = new Set();
+  const cleaned = [];
+  raw.forEach((b, idx) => {
+    const key = String(b?.key ?? "").trim() || `CAT_${idx + 1}`;
+    if (seen.has(key)) return;
+    seen.add(key);
+    cleaned.push({
+      key,
+      name: String(b?.name ?? key),
+      monthlyMan: Number(b?.monthlyMan ?? 0)
+    });
+  });
+  return cleaned.length ? cleaned : structuredClone(BUDGETS);
+}
+
+function uniqueBudgetKey() {
+  const existing = new Set(state.budgets.map(b => b.key));
+  let key = `CAT_${Date.now().toString(36)}`;
+  while (existing.has(key)) {
+    key = `CAT_${Date.now().toString(36)}_${Math.random().toString(36).slice(2,6)}`;
+  }
+  return key;
+}
+
+function renderCategoryOptions() {
+  const current = catSel.value;
+  catSel.innerHTML = "";
+  state.budgets.forEach(b => {
+    const op = document.createElement("option");
+    op.value = b.key;
+    op.textContent = b.name;
+    catSel.appendChild(op);
+  });
+  if (state.budgets.some(b => b.key === current)) {
+    catSel.value = current;
+  }
+}
+
+function renderBudgetEditor() {
+  const tbody = $("tableBudgetEdit").querySelector("tbody");
+  tbody.innerHTML = "";
+  state.budgets.forEach((b, idx) => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td><input type="text" value="${escapeHtml(b.key)}" data-field="key" data-idx="${idx}" /></td>
+      <td><input type="text" value="${escapeHtml(b.name)}" data-field="name" data-idx="${idx}" /></td>
+      <td class="right"><input type="number" min="0" step="0.1" value="${b.monthlyMan}" data-field="monthlyMan" data-idx="${idx}" /></td>
+      <td class="right"><button class="danger" data-action="remove" data-idx="${idx}">删除</button></td>
+    `;
+    tbody.appendChild(tr);
+  });
+
+  tbody.querySelectorAll("input[data-field]").forEach(input => {
+    input.addEventListener("change", () => {
+      const field = input.getAttribute("data-field");
+      const idx = Number(input.getAttribute("data-idx"));
+      const budget = state.budgets[idx];
+      if (!budget) return;
+
+      if (field === "key") {
+        const nextKey = input.value.trim();
+        if (!nextKey) {
+          alert("类别代码不能为空");
+          input.value = budget.key;
+          return;
+        }
+        if (state.budgets.some((b, i) => b.key === nextKey && i !== idx)) {
+          alert("类别代码必须唯一");
+          input.value = budget.key;
+          return;
+        }
+        const prevKey = budget.key;
+        budget.key = nextKey;
+        state.txs.forEach(t => {
+          if (t.categoryKey === prevKey) t.categoryKey = nextKey;
+        });
+      } else if (field === "name") {
+        budget.name = input.value.trim() || budget.key;
+        input.value = budget.name;
+      } else if (field === "monthlyMan") {
+        const val = Number(input.value);
+        budget.monthlyMan = Number.isFinite(val) ? val : 0;
+        input.value = budget.monthlyMan;
+      }
+
+      saveState(state);
+      renderCategoryOptions();
+      renderAll();
+    });
+  });
+
+  tbody.querySelectorAll("button[data-action='remove']").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const idx = Number(btn.getAttribute("data-idx"));
+      const target = state.budgets[idx];
+      if (!target) return;
+      if (!confirm(`确定删除类别“${target.name}”吗？已记录的数据不会被删除。`)) return;
+      state.budgets.splice(idx, 1);
+      saveState(state);
+      renderBudgetEditor();
+      renderCategoryOptions();
+      renderAll();
+    });
+  });
+}
 
 // rendering
 function fmt(yen){ return fmtMoney(yen, state.unitMode); }
@@ -146,7 +265,7 @@ function renderAll(){
   // category budget table
   const tbody = $("tableCat").querySelector("tbody");
   tbody.innerHTML = "";
-  BUDGETS.forEach(b => {
+  state.budgets.forEach(b => {
     const budgetYen = b.monthlyMan * 10000;
     const catUsed = catTotals.get(b.key) ?? 0;
     const catRemain = budgetYen - catUsed;
@@ -164,7 +283,7 @@ function renderAll(){
   // tx list
   const txBody = $("tableTx").querySelector("tbody");
   txBody.innerHTML = "";
-  const catNameMap = new Map(BUDGETS.map(b => [b.key, b.name]));
+  const catNameMap = new Map(state.budgets.map(b => [b.key, b.name]));
   txs.forEach(t => {
     const catName = catNameMap.get(t.categoryKey) ?? t.categoryKey;
     const tr = document.createElement("tr");
@@ -193,3 +312,4 @@ function renderAll(){
 }
 
 renderAll();
+renderBudgetEditor();
