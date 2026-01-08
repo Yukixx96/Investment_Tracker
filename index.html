@@ -1,151 +1,203 @@
 <!doctype html>
+
 <html lang="zh">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>每月投资管理（本地保存）</title>
-  <link rel="stylesheet" href="./assets/styles.css" />
-</head>
-<body>
-  <div class="wrap">
-    <h1>每月投资管理（本地保存 / 自动汇总）</h1>
-    <div class="muted">
-      数据保存在你的浏览器 LocalStorage。建议定期“导出 JSON”备份。
-    </div>
 
-    <div class="grid grid2" style="margin-top:12px;">
-      <div class="card">
-        <div class="row">
-          <div>
-            <label>当前查看月份</label>
-            <input id="monthPicker" type="month" />
-          </div>
-          <div>
-            <label>每月总上限（円）</label>
-            <input id="monthlyCap" type="number" step="1000" />
-          </div>
-          <div>
-            <label>货币单位显示</label>
-            <select id="unitMode">
-              <option value="yen">円（默认）</option>
-              <option value="man">万日元（仅显示）</option>
-            </select>
-          </div>
-          <div>
-            <label>操作</label>
-            <div class="btns">
-              <button id="btnExport">导出JSON</button>
-              <button id="btnImport">导入JSON</button>
-              <button id="btnReset" class="danger">清空数据</button>
-              <input id="fileInput" type="file" accept="application/json" style="display:none" />
-            </div>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>每月投资管理（本地保存）</title>
+
+    <link rel="stylesheet" href="./assets/styles/base.css">
+    <link rel="stylesheet" href="./assets/styles/layout.css">
+    <link rel="stylesheet" href="./assets/styles/components.css">
+    <link rel="stylesheet" href="./assets/styles/pages.css">
+
+  </head>
+
+  <body>
+    <div class="wrap">
+      
+      <div class="topbar">
+        <div class="topbar-left">
+          <h1>每月投资管理</h1>
+          <div class="muted">
+            数据保存在你的浏览器 LocalStorage。建议定期“导出 JSON”备份。
           </div>
         </div>
 
-        <hr class="hr" />
-
-        <div class="row">
-          <div>
-            <label>日期</label>
-            <input id="date" type="date" />
+        <div class="topbar-right">
+          <div class="btns">
+            <button id="btnExport">导出JSON</button>
+            <button id="btnImport">导入JSON</button>
+            <button id="btnReset" class="danger">清空数据</button>
+            <input id="fileInput" type="file" accept="application/json" style="display:none" />
           </div>
-          <div>
-            <label>类别</label>
-            <select id="category"></select>
-          </div>
-          <div>
-            <label>标的（可选：NVDA/GOOGL/任天堂等）</label>
-            <input id="ticker" placeholder="例如：英伟达 / NVDA" />
-          </div>
-          <div>
-            <label>金额（円）</label>
-            <input id="amount" type="number" step="1" placeholder="例如：12000" />
-          </div>
-        </div>
-
-        <div class="row2" style="margin-top:10px;">
-          <div>
-            <label>备注（可选）</label>
-            <textarea id="note" placeholder="例如：1股；低价补一点"></textarea>
-          </div>
-          <div>
-            <label>&nbsp;</label>
-            <div class="btns">
-              <button id="btnAdd" class="primary">添加记录</button>
-              <span class="muted">你可以“1股1股记”，系统会自动汇总。</span>
-            </div>
-          </div>
-        </div>
-
-        <div class="muted" style="margin-top:10px;">
-          预算配置在 <code>assets/budgets.js</code> 里；想改为网页可编辑我也能再帮你升级。
         </div>
       </div>
 
-      <div class="card">
-        <div class="kpi">
-          <div class="box">
-            <div class="small">本月已用</div>
-            <div class="v" id="kpiUsed">-</div>
+      <div class="grid grid2" style="margin-top:12px;">
+        <div class="card">
+          <div class="row row3">
+            <div>
+              <label>当前查看月份</label>
+              <input id="monthPicker" type="month" />
+            </div>
+            <div>
+              <label>每月总上限（円）</label>
+              <input id="monthlyCap" type="number" step="1000" />
+            </div>
+            <div>
+              <label>货币单位显示</label>
+              <select id="unitMode">
+                <option value="yen">円（默认）</option>
+                <option value="man">万日元（仅显示）</option>
+              </select>
+            </div>
           </div>
-          <div class="box">
-            <div class="small">本月剩余</div>
-            <div class="v" id="kpiRemain">-</div>
+
+          <hr class="hr" />
+
+          <div class="row row4">
+            <div>
+              <label>日期</label>
+              <input id="date" type="date" />
+            </div>
+            <div>
+              <label>类别</label>
+              <select id="category"></select>
+            </div>
+            <div>
+              <label>股票</label>
+              <input id="ticker" placeholder="例：英伟达" />
+            </div>
+            <div>
+              <label>金额（円）</label>
+              <input id="amount" type="number" step="1" placeholder="例：12000" />
+            </div>
           </div>
-          <div class="box">
-            <div class="small">使用率</div>
-            <div class="v" id="kpiRate">-</div>
+
+          <div class="row2" style="margin-top:10px;">
+            <div>
+              <label>备注</label>
+              <textarea id="note" placeholder="例：低位补仓"></textarea>
+            </div>
+            <div>
+              <label>&nbsp;</label>
+              <div class="btns">
+                <button id="btnAdd" class="primary">添加记录</button>
+                <span class="muted">你可以“1股1股记”，系统会自动汇总。</span>
+              </div>
+            </div>
           </div>
+
+          <div class="muted" style="margin-top:10px;">
+            预算/类别支持网页编辑，保存在浏览器 LocalStorage。
+          </div>
+
+          <!-- 预算编辑器 -->
+          <details class="card" style="margin-top:12px;">
+            <summary style="cursor:pointer; font-weight:700;">类别编辑（点击展开/关闭）</summary>
+
+            <div class="muted" style="margin-top:8px;">
+              单位：<b>万日元/月</b>。<br/>
+              提示：删除类别不会删除历史记录，但历史记录里如果引用了已删除的 key，会显示为 key 本身。
+            </div>
+
+            <div class="btns" style="margin-top:10px;">
+              <button id="btnAddBudget" class="primary">新增类别</button>
+              <button id="btnResetBudgets" class="danger">恢复默认预算</button>
+            </div>
+
+            <div style="margin-top:10px;">
+              <table id="tableBudgets">
+                <thead>
+                  <tr>
+                    <th style="width:160px;">Key（唯一）</th>
+                    <th>名称</th>
+                    <th class="right" style="width:140px;">万/月</th>
+                    <th style="width:90px;"></th>
+                  </tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </details>
         </div>
 
-        <div style="margin-top:14px;">
-          <div class="small">按类别预算（本月）</div>
-          <table id="tableCat">
+        <div class="card">
+          <div class="kpi">
+            <div class="box">
+              <div class="small">本月已用</div>
+              <div class="v" id="kpiUsed">-</div>
+            </div>
+            <div class="box">
+              <div class="small">本月剩余</div>
+              <div class="v" id="kpiRemain">-</div>
+            </div>
+            <div class="box">
+              <div class="small">使用率</div>
+              <div class="v" id="kpiRate">-</div>
+            </div>
+          </div>
+
+          <div style="margin-top:14px;">
+            <div class="small">按类别预算（本月）</div>
+            <table id="tableCat">
+              <thead>
+                <tr>
+                  <th>类别</th>
+                  <th class="right">预算</th>
+                  <th class="right">已用</th>
+                  <th class="right">剩余</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+            <div class="muted" style="margin-top:8px;">
+              说明：预算来自你的年度表（240万/年，20万/月）。
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:12px;">
+        <div class="headRow">
+          <div>
+            <span class="pill" id="pillMonth">-</span>
+            <span class="pill" id="pillCount">-</span>
+          </div>
+          <div class="muted">点击“删除”可移除单条记录。</div>
+        </div>
+
+        <div style="margin-top:10px;">
+          <table id="tableTx">
             <thead>
               <tr>
-                <th>类别</th>
-                <th class="right">预算</th>
-                <th class="right">已用</th>
-                <th class="right">剩余</th>
+                <th style="width:90px;">日期</th>
+                <th style="width:130px;">类别</th>
+                <th>标的</th>
+                <th class="right" style="width:120px;">金额</th>
+                <th>备注</th>
+                <th style="width:90px;"></th>
               </tr>
             </thead>
             <tbody></tbody>
           </table>
-          <div class="muted" style="margin-top:8px;">
-            说明：预算来自你的年度表（240万/年，20万/月）。
-          </div>
         </div>
       </div>
     </div>
 
-    <div class="card" style="margin-top:12px;">
-      <div class="headRow">
-        <div>
-          <span class="pill" id="pillMonth">-</span>
-          <span class="pill" id="pillCount">-</span>
-        </div>
-        <div class="muted">点击“删除”可移除单条记录。</div>
-      </div>
+    <!-- 用 ES Modules 拆文件 -->
+    <script type="module" src="./assets/app.js"></script>
 
-      <div style="margin-top:10px;">
-        <table id="tableTx">
-          <thead>
-            <tr>
-              <th style="width:90px;">日期</th>
-              <th style="width:130px;">类别</th>
-              <th>标的</th>
-              <th class="right" style="width:120px;">金额</th>
-              <th>备注</th>
-              <th style="width:90px;"></th>
-            </tr>
-          </thead>
-          <tbody></tbody>
-        </table>
-      </div>
-    </div>
-  </div>
+    <footer class="footer">
+      <a href="https://github.com/Yukixx96/Investment_Tracker" target="_blank" rel="noopener">
+        © 2026 Yukixx96 · Investment Tracker
+      </a>
+    </footer>
 
-  <!-- 用 ES Modules 拆文件 -->
-  <script type="module" src="./assets/app.js"></script>
-</body>
+
+    
+  </body>
+
 </html>
