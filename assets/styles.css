@@ -34,12 +34,17 @@ button.danger{ background:#fff; color:#b91c1c; border-color:#fecaca;}
 table{ width:100%; border-collapse:collapse; font-size:14px; }
 th, td{ border-bottom:1px solid var(--bd); padding:10px 8px; text-align:left; vertical-align:top;}
 th{ color:var(--muted); font-weight:700; font-size:12px; }
-.table-edit input{
-  padding:6px 8px;
-  font-size:13px;
-  border-radius:8px;
-}
 .table-edit td{ vertical-align:middle; }
+.budget-form{
+  display:grid;
+  grid-template-columns: 1fr 1fr 1fr auto;
+  gap:10px;
+  align-items:end;
+}
+@media (max-width:900px){
+  .budget-form{ grid-template-columns:1fr; }
+  .budget-form .btns{ justify-content:flex-start; }
+}
 .pill{ display:inline-block; padding:4px 8px; border:1px solid var(--bd); border-radius:999px; font-size:12px; background:#fff;}
 .kpi{ display:flex; gap:12px; flex-wrap:wrap;}
 .kpi .box{ flex:1; min-width:180px; border:1px solid var(--bd); border-radius:12px; padding:10px; background:#fff;}

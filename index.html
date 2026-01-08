@@ -89,9 +89,28 @@
               <div class="small">预算配置（万日元/月）</div>
               <div class="muted">可修改类别名称与金额，删除不会影响已记录的数据。</div>
             </div>
-            <button id="btnAddBudget">新增类别</button>
           </div>
-          <table id="tableBudgetEdit" class="table-edit" style="margin-top:8px;">
+
+          <div class="budget-form" style="margin-top:10px;">
+            <div>
+              <label>类别代码</label>
+              <input id="budgetKey" placeholder="例如：US_TECH" />
+            </div>
+            <div>
+              <label>类别名称</label>
+              <input id="budgetName" placeholder="例如：美股科技" />
+            </div>
+            <div>
+              <label>预算（万日元/月）</label>
+              <input id="budgetMonthly" type="number" min="0" step="0.1" placeholder="例如：3.5" />
+            </div>
+            <div class="btns">
+              <button id="btnSaveBudget" class="primary">保存类别</button>
+              <button id="btnCancelBudget">清空</button>
+            </div>
+          </div>
+
+          <table id="tableBudgetEdit" class="table-edit" style="margin-top:12px;">
             <thead>
               <tr>
                 <th>类别代码</th>

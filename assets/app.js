@@ -116,13 +116,49 @@ $("btnReset").addEventListener("click", () => {
 });
 
 // budget editor
-$("btnAddBudget").addEventListener("click", () => {
-  const key = uniqueBudgetKey();
-  state.budgets.push({ key, name: "新类别", monthlyMan: 1 });
+const budgetForm = {
+  key: $("budgetKey"),
+  name: $("budgetName"),
+  monthly: $("budgetMonthly"),
+  editingIndex: null
+};
+
+$("btnSaveBudget").addEventListener("click", () => {
+  const key = budgetForm.key.value.trim();
+  const name = budgetForm.name.value.trim();
+  const monthlyMan = Number(budgetForm.monthly.value);
+
+  if (!key) return alert("请输入类别代码");
+  if (!name) return alert("请输入类别名称");
+  if (!Number.isFinite(monthlyMan) || monthlyMan < 0) return alert("请输入正确的预算金额");
+
+  const existingIndex = state.budgets.findIndex((b, i) => b.key === key && i !== budgetForm.editingIndex);
+  if (existingIndex >= 0) return alert("类别代码必须唯一");
+
+  if (budgetForm.editingIndex === null) {
+    state.budgets.push({ key, name, monthlyMan });
+  } else {
+    const target = state.budgets[budgetForm.editingIndex];
+    const prevKey = target.key;
+    target.key = key;
+    target.name = name;
+    target.monthlyMan = monthlyMan;
+    if (prevKey !== key) {
+      state.txs.forEach(t => {
+        if (t.categoryKey === prevKey) t.categoryKey = key;
+      });
+    }
+  }
+
   saveState(state);
+  clearBudgetForm();
   renderBudgetEditor();
   renderCategoryOptions();
   renderAll();
+});
+
+$("btnCancelBudget").addEventListener("click", () => {
+  clearBudgetForm();
 });
 
 function normalizeBudgets(raw) {
@@ -142,13 +178,11 @@ function normalizeBudgets(raw) {
   return cleaned.length ? cleaned : structuredClone(BUDGETS);
 }
 
-function uniqueBudgetKey() {
-  const existing = new Set(state.budgets.map(b => b.key));
-  let key = `CAT_${Date.now().toString(36)}`;
-  while (existing.has(key)) {
-    key = `CAT_${Date.now().toString(36)}_${Math.random().toString(36).slice(2,6)}`;
-  }
-  return key;
+function clearBudgetForm() {
+  budgetForm.key.value = "";
+  budgetForm.name.value = "";
+  budgetForm.monthly.value = "";
+  budgetForm.editingIndex = null;
 }
 
 function renderCategoryOptions() {
@@ -171,50 +205,27 @@ function renderBudgetEditor() {
   state.budgets.forEach((b, idx) => {
     const tr = document.createElement("tr");
     tr.innerHTML = `
-      <td><input type="text" value="${escapeHtml(b.key)}" data-field="key" data-idx="${idx}" /></td>
-      <td><input type="text" value="${escapeHtml(b.name)}" data-field="name" data-idx="${idx}" /></td>
-      <td class="right"><input type="number" min="0" step="0.1" value="${b.monthlyMan}" data-field="monthlyMan" data-idx="${idx}" /></td>
-      <td class="right"><button class="danger" data-action="remove" data-idx="${idx}">删除</button></td>
+      <td>${escapeHtml(b.key)}</td>
+      <td>${escapeHtml(b.name)}</td>
+      <td class="right">${b.monthlyMan}</td>
+      <td class="right">
+        <button data-action="edit" data-idx="${idx}">编辑</button>
+        <button class="danger" data-action="remove" data-idx="${idx}">删除</button>
+      </td>
     `;
     tbody.appendChild(tr);
   });
 
-  tbody.querySelectorAll("input[data-field]").forEach(input => {
-    input.addEventListener("change", () => {
-      const field = input.getAttribute("data-field");
-      const idx = Number(input.getAttribute("data-idx"));
+  tbody.querySelectorAll("button[data-action='edit']").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const idx = Number(btn.getAttribute("data-idx"));
       const budget = state.budgets[idx];
       if (!budget) return;
-
-      if (field === "key") {
-        const nextKey = input.value.trim();
-        if (!nextKey) {
-          alert("类别代码不能为空");
-          input.value = budget.key;
-          return;
-        }
-        if (state.budgets.some((b, i) => b.key === nextKey && i !== idx)) {
-          alert("类别代码必须唯一");
-          input.value = budget.key;
-          return;
-        }
-        const prevKey = budget.key;
-        budget.key = nextKey;
-        state.txs.forEach(t => {
-          if (t.categoryKey === prevKey) t.categoryKey = nextKey;
-        });
-      } else if (field === "name") {
-        budget.name = input.value.trim() || budget.key;
-        input.value = budget.name;
-      } else if (field === "monthlyMan") {
-        const val = Number(input.value);
-        budget.monthlyMan = Number.isFinite(val) ? val : 0;
-        input.value = budget.monthlyMan;
-      }
-
-      saveState(state);
-      renderCategoryOptions();
-      renderAll();
+      budgetForm.key.value = budget.key;
+      budgetForm.name.value = budget.name;
+      budgetForm.monthly.value = budget.monthlyMan;
+      budgetForm.editingIndex = idx;
+      budgetForm.key.focus();
     });
   });
 
